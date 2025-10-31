@@ -10,6 +10,35 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// API Key Authentication Middleware
+const apiKeyAuth = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+    const validApiKey = process.env.API_KEY;
+
+    if (!validApiKey) {
+        console.warn('Warning: API_KEY not set in environment variables');
+        return next();
+    }
+
+    if (!apiKey) {
+        return res.status(401).json({
+            success: false,
+            error: 'API key is required',
+            message: 'Please provide API key in X-API-Key header or apiKey query parameter'
+        });
+    }
+
+    if (apiKey !== validApiKey) {
+        return res.status(403).json({
+            success: false,
+            error: 'Invalid API key',
+            message: 'The provided API key is not valid'
+        });
+    }
+
+    next();
+};
+
 // Create transporter
 const transporter = nodemailer.createTransport({
     service: process.env.EMAIL_SERVICE || 'gmail',
@@ -39,8 +68,8 @@ app.get('/', (req, res) => {
     });
 });
 
-// Send email endpoint
-app.post('/api/send-email', async (req, res) => {
+// Send email endpoint (protected with API key)
+app.post('/api/send-email', apiKeyAuth, async (req, res) => {
     try {
         const { to, subject, message } = req.body;
 

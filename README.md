@@ -5,9 +5,11 @@ A simple REST API application for sending emails using Node.js, Express, and Nod
 ## Features
 
 - REST API endpoint to send emails
+- API Key authentication for security
 - Accepts destination address and message
 - Supports various email services (Gmail, Outlook, Yahoo, etc.)
 - JSON response format
+- Docker support for easy deployment
 
 ## Setup
 
@@ -23,7 +25,8 @@ npm install
 cp .env.example .env
 ```
 
-3. Configure your email settings in `.env`:
+3. Configure your settings in `.env`:
+   - Set `API_KEY` to a secure random string (used for authentication)
    - For Gmail: Enable 2FA and generate an App Password
    - Set `EMAIL_USER` to your email address
    - Set `EMAIL_PASSWORD` to your app password
@@ -50,6 +53,14 @@ The server will start on `http://localhost:3000`
 
 **POST** `/api/send-email`
 
+**Authentication Required:** API Key must be provided in `X-API-Key` header or `apiKey` query parameter
+
+**Headers:**
+```
+X-API-Key: your-api-key-here
+Content-Type: application/json
+```
+
 **Request Body:**
 
 ```json
@@ -71,7 +82,17 @@ The server will start on `http://localhost:3000`
 }
 ```
 
-**Response (Error):**
+**Response (Error - Missing/Invalid API Key):**
+
+```json
+{
+  "success": false,
+  "error": "Invalid API key",
+  "message": "The provided API key is not valid"
+}
+```
+
+**Response (Other Errors):**
 
 ```json
 {
@@ -85,6 +106,8 @@ The server will start on `http://localhost:3000`
 
 **GET** `/`
 
+**No Authentication Required**
+
 Returns API status and available endpoints.
 
 ## Example Usage
@@ -94,19 +117,24 @@ Using curl:
 ```bash
 curl -X POST http://localhost:3000/api/send-email \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key-here" \
   -d "{\"to\":\"recipient@example.com\",\"subject\":\"Test Email\",\"message\":\"Hello, this is a test message!\"}"
 ```
 
 Using PowerShell:
 
 ```powershell
+$headers = @{
+    "X-API-Key" = "your-api-key-here"
+}
+
 $body = @{
     to = "recipient@example.com"
     subject = "Test Email"
     message = "Hello, this is a test message!"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/send-email" -Method POST -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "http://localhost:3000/api/send-email" -Method POST -Body $body -ContentType "application/json" -Headers $headers
 ```
 
 ## Gmail Configuration
