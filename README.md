@@ -56,6 +56,7 @@ The server will start on `http://localhost:3000`
 **Authentication Required:** API Key must be provided in `X-API-Key` header or `apiKey` query parameter
 
 **Headers:**
+
 ```
 X-API-Key: your-api-key-here
 Content-Type: application/json
