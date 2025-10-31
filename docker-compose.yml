@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mailsender:
+    build: .
+    container_name: mailsender-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - EMAIL_SERVICE=${EMAIL_SERVICE}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+    env_file:
+      - .env
